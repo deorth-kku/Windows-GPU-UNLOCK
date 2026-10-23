@@ -1,4 +1,5 @@
 **/build/
+unlock/machine_profile.h
 benchmark/bin/
 benchmark/packages/
 benchmark/downloads/

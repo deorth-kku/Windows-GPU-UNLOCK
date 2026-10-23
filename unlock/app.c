@@ -4,6 +4,12 @@
 #include "checks.h"
 #include "sha256.h"
 #include "ownership.h"
+#if defined(GU_WINDOWS_HANDOFF)
+#include "windows_boot.h"
+#endif
+#if defined(GU_WINDOWS_HANDOFF) && (!defined(GU_EXPERIMENTAL_3090) || !defined(GU_ENTRY_LATCHED_SS1_PRESERVE))
+#error Local autostart requires the validated SS1-preserve experimental profile
+#endif
 #include "vendor/unlock_610.h"
 #include "vendor/gfw_eval.h"
 #include <Protocol/GraphicsOutput.h>
@@ -312,6 +318,22 @@ static EFI_STATUS Arm(VOID) {
   if(!Gu.profile_verified || Gu.fault || !Gu.display_ok)return EFI_ACCESS_DENIED;
   if(!Table->ConIn || !Table->ConIn->Reset || !Table->ConIn->ReadKeyStroke)return EFI_UNSUPPORTED;
   EFI_STATUS status=Table->ConIn->Reset(Table->ConIn,FALSE);if(EFI_ERROR(status))return status;
+#if defined(GU_WINDOWS_HANDOFF)
+  GuLog("LOCAL AUTOSTART: profile=%s exact RTX3080 Ti / AMD display; verified PROM and assets.\n",GU_STOCK_PROFILE_NAME);
+  GuLogText("Automatic unlock in 5 seconds. Press Esc to skip unlock and boot Windows normally.\n");
+  if(PendingOwner.agent)GuLogText("After countdown: release target firmware driver, recheck, attempt once.\n");
+  if(!GuLogReady())return EFI_DEVICE_ERROR;
+  for(UINTN i=0;i<=50;i++) {
+    EFI_INPUT_KEY key;status=Table->ConIn->ReadKeyStroke(Table->ConIn,&key);
+    if(!EFI_ERROR(status)) {
+      if(key.ScanCode==0x17 || key.UnicodeChar==27)return EFI_ABORTED;
+      /* U and other keys cannot bypass the countdown or shorten it. */
+    } else if(status!=EFI_NOT_READY)return status;
+    if(i%10==0 && i<50){GuLog("Countdown: %u seconds; Esc skips unlock.\n",(unsigned)(5-i/10));if(!GuLogReady())return EFI_DEVICE_ERROR;}
+    if(i<50){status=Gu.bs->Stall(100000);if(EFI_ERROR(status))return status;}
+  }
+  return Gu.profile_verified && !Gu.fault && GuLogReady()?EFI_SUCCESS:EFI_ACCESS_DENIED;
+#else
   GuLog("EXPERIMENTAL MANUAL UNLOCK: profile=%s exact RTX3090 24GB / AMD display / verified PROM and assets.\n",GU_STOCK_PROFILE_NAME);
   if(PendingOwner.agent)GuLogText("U will release the RTX firmware driver, restore verified access settings if needed, then recheck and attempt once.\n");
   GuLogText("Press U to attempt once; Esc or 30-second timeout cancels.\n");
@@ -325,6 +347,7 @@ static EFI_STATUS Arm(VOID) {
     GuStall(100000);
   }
   return EFI_TIMEOUT;
+#endif
 #endif
 }
 static VOID Halt(VOID) {
@@ -354,10 +377,15 @@ static VOID ReleaseHalt(EFI_STATUS Status,BOOLEAN Attempted) {
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE Image,EFI_SYSTEM_TABLE *St) {
   if(!St || !St->BootServices || !St->RuntimeServices)return EFI_INVALID_PARAMETER;
   Table=St;GuInit(St->BootServices,NULL);Gu.image=Image;Gu.display_check=DisplayCheck;
+#if defined(GU_WINDOWS_HANDOFF)
+  GU_WINDOWS_BOOT windows={0};BOOLEAN windows_ready=FALSE,cleanup_ok=TRUE;
+#endif
   memset(&PendingOwner,0,sizeof(PendingOwner));
   Stage="usb-log";EFI_STATUS status=GuIoOpen(Image,St);BOOLEAN attempted=FALSE,release_attempted=FALSE;
   if(EFI_ERROR(status))goto finish;
-#if defined(GU_EXPERIMENTAL_3090)
+#if defined(GU_WINDOWS_HANDOFF)
+  GuLog("BUILD MODE: LOCAL AUTOSTART; compile-time profile=%s; 5-second Esc countdown, one attempt, direct Windows handoff.\n",GU_STOCK_PROFILE_NAME);
+#elif defined(GU_EXPERIMENTAL_3090)
   GuLog("BUILD MODE: EXPERIMENTAL MANUAL UNLOCK; compile-time profile=%s. The shared I/O preflight banner above is superseded: exact-card checks and manual U can authorize one stock transaction.\n",GU_STOCK_PROFILE_NAME);
 #endif
   UINT8 secure=0xff;UINTN bytes=1;
@@ -366,6 +394,12 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE Image,EFI_SYSTEM_TABLE *St) {
   if(EFI_ERROR(status) || bytes!=1 || secure){status=EFI_SECURITY_VIOLATION;goto finish;}
   status=Step(status);if(EFI_ERROR(status))goto finish;
   Stage="watchdog";status=Step(Gu.bs->SetWatchdogTimer(0,0,0,NULL));if(EFI_ERROR(status))goto finish;
+#if defined(GU_WINDOWS_HANDOFF)
+  /* The exact Windows loader must already be loaded successfully before the
+     application may release a driver, alter registers, or enable GPU DMA. */
+  Stage="windows-loader";status=Step(GuWindowsPrepare(Image,&windows));if(EFI_ERROR(status))goto finish;
+  windows_ready=TRUE;
+#endif
   Stage="target";status=Step(FindTarget());if(EFI_ERROR(status))goto finish;
   Stage="display";Gu.display_ok=DisplayCheck();status=Step(Gu.display_ok?EFI_SUCCESS:EFI_UNSUPPORTED);if(EFI_ERROR(status))goto finish;
   /* Read-only validation precedes ownership, asset loading and manual input. */
@@ -380,7 +414,11 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE Image,EFI_SYSTEM_TABLE *St) {
   Stage="ownership";status=GuClaimController();
   if(status==EFI_ACCESS_DENIED) {
     status=GuFindReleaseOwner(St,&PendingOwner,TRUE);
+#if defined(GU_WINDOWS_HANDOFF)
+    if(!EFI_ERROR(status))GuLogText("Exclusive ownership deferred until countdown and explicit driver release.\n");
+#else
     if(!EFI_ERROR(status))GuLogText("Exclusive ownership deferred until manual U and explicit driver release.\n");
+#endif
   }
   status=Step(status);if(EFI_ERROR(status))goto finish;
   Stage="config-recheck";status=Step(ConfigCheck(FALSE));if(EFI_ERROR(status))goto finish;
@@ -395,7 +433,11 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE Image,EFI_SYSTEM_TABLE *St) {
   if(PendingOwner.agent) {
     GU_RELEASE_OWNER current;
     Stage="owner-recheck";
+#if defined(GU_WINDOWS_HANDOFF)
+    GuLogText("Countdown complete: release RTX firmware driver once, then revalidate.\n");
+#else
     GuLogText("Manual U confirmed: release RTX firmware driver once, then revalidate.\n");
+#endif
     if(!GuLogReady()){status=EFI_DEVICE_ERROR;goto finish;}
     /* Durable intent precedes the last owner snapshot. No file IO between a
        successful final comparison and DisconnectController. */
@@ -448,13 +490,39 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE Image,EFI_SYSTEM_TABLE *St) {
   if(!GuLogReady()){status=EFI_DEVICE_ERROR;if(release_attempted)ReleaseHalt(status,attempted);if(Gu.started)Halt();}
   if(attempted && !GuSafeToReturn())Halt();
   EFI_STATUS closed=GuIoClose();
+#if defined(GU_WINDOWS_HANDOFF)
+  if(EFI_ERROR(closed)){cleanup_ok=FALSE;if(release_attempted)ReleaseHalt(closed,attempted);if(Gu.started)Halt();status=closed;}
+#else
   if(EFI_ERROR(closed)){if(release_attempted)ReleaseHalt(closed,attempted);if(Gu.started)Halt();status=closed;}
+#endif
   if(Gu.owned) {
     closed=Gu.bs->CloseProtocol(Gu.handle,&PciGuid,Image,NULL);
+#if defined(GU_WINDOWS_HANDOFF)
+    if(EFI_ERROR(closed)){cleanup_ok=FALSE;if(release_attempted)ReleaseHalt(closed,attempted);if(Gu.started)Halt();status=closed;}else Gu.owned=FALSE;
+#else
     if(EFI_ERROR(closed)){if(release_attempted)ReleaseHalt(closed,attempted);if(Gu.started)Halt();status=closed;}else Gu.owned=FALSE;
+#endif
   }
   GuReleaseAssets();
+#if defined(GU_WINDOWS_HANDOFF)
+  /* Before any transaction/release, rejection (including warm-state checks)
+     may safely skip unlock. Afterwards only complete success may boot Windows.
+     Existing retained-resource Halt paths above never reach this handoff. */
+  if(windows_ready && cleanup_ok && GuSafeToReturn() && !Gu.owned && !Gu.allocations && !Gu.dma_count &&
+     ((!attempted && !release_attempted) || !EFI_ERROR(status))) {
+    GuConsole(EFI_ERROR(status)?"Unlock skipped; starting Windows without another attempt.\n":
+      "Unlock completed and cleaned up; starting Windows directly.\n");
+    EFI_STATUS started=GuWindowsStart(&windows);
+    GuLog("Windows handoff: StartImage returned %#llx.\n",(unsigned long long)started);
+    GuConsole("STOP: Windows Boot Manager returned. No retry. POWER OFF or use the firmware boot menu.\n");
+    for(;;)Gu.bs->Stall(1000000);
+  }
+  EFI_STATUS discarded=GuWindowsDiscard(&windows);
+  if(EFI_ERROR(discarded))status=discarded;
+  GuConsole("Autostart rejected before handoff. Returning to firmware without retry.\n");
+#else
   if(!EFI_ERROR(status))GuConsole("UEFI transaction completed and cleaned up. Returning to firmware; Windows validation is pending.\n");
   else GuConsole("Attempt cancelled or rejected. Returning without another attempt.\n");
+#endif
   return status;
 }

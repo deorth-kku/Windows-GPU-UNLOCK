@@ -1,5 +1,14 @@
 # Changes
 
+## 2026-10-23 — Automatic Windows handoff (auto-load) for the 3080 Ti port
+
+- Ported the automatic boot handoff from bjrasmussen-jpg/windows_rtx3090_unlock onto the local 3080 Ti port. The unlock no longer requires a manual `U` confirmation plus a separate Windows Boot Manager chainload: a cancellable five-second countdown arms the single transaction, and the exact internal Windows loader is staged before any GPU effect and started only after proven cleanup.
+- New files: `unlock/windows_boot.c` and `unlock/windows_boot.h` (stages `\\EFI\\Microsoft\\Boot\\bootmgfw.efi` from one explicitly configured internal GPT partition via `LoadImage`, then `StartImage` it after cleanup; no USB fallback, no BootOrder/BootNext rewrite, no ESP modification).
+- `unlock/app.c`: `Arm()` now runs a 5-second countdown (Esc skips the unlock and boots Windows with the existing state; `U` and other keys cannot shorten it). `efi_main()` stages the Windows loader in a new `windows-loader` stage before target discovery, tracks `cleanup_ok`, and hands off to Windows only when cleanup is proven and no resources are retained. The 3080 Ti relaxations are preserved: `DisplayCheck()` returns true, `PromCheck()` is skipped, and `ColdCheck()` skips exact 3090 register values.
+- `unlock/build.ps1`: new autostart mode. Supplying `-WindowsEspGuid`, `-WindowsEspStartLba`, `-WindowsEspSizeLba` and `-WindowsEspPartition` (with `-ExperimentalUnlock -StockProfile entryLatchedSs1Preserve`) generates `unlock/machine_profile.h` and builds `build/autostart/RTX3090-AUTOLOAD.EFI` with `windows_boot` in the source set and `-DGU_WINDOWS_HANDOFF` in the defines. The `GU_WINDOWS_HANDOFF` define scopes the handoff code in `app.c` (countdown `Arm()`, loader staging, Windows start) to autostart builds only, so the preflight, manual-experimental, and host-test builds still compile. The generated `machine_profile.h` carries the local partition GUID and is gitignored.
+- Local adaptation: upstream hardcoded GPT partition number 1; this machine's Windows partition is number 2, so `windows_boot.c` now matches `GU_WINDOWS_ESP_PARTITION` from the generated profile.
+- The autostart variant is host-buildable only; it has not been installed or validated in a real automatic boot. Host mock tests for the countdown/handoff (upstream `test_autostart.c`/`test_local_boot.c`) depend on a newer `test_entry_latched.c` harness than this tree carries and were not ported.
+
 ## 2026-10-20 — Windows GPU UNLOCK public case study
 
 - Base: rough2515-hub/rtx3080-unlock-public at a08254d269af30ace9e57237abd3d8e6c261e8f5; original core and licenses retained.
