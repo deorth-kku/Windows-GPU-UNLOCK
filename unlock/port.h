@@ -79,6 +79,13 @@ typedef struct {
   UINT32 flrs, mmio_writes, dma_count;
   GU_DMA *allocations;
   BOOLEAN (*display_check)(VOID);
+  /* Runtime Windows-ESP target, parsed from machine_profile.txt on the
+     booted ESP. Never baked into the image, so the published binary stays
+     machine-agnostic (no per-machine partition GUID/LBA in git history). */
+  EFI_GUID esp_guid;
+  UINT64 esp_partition, esp_start_lba, esp_size_lba;
+  UINT32 countdown_seconds;
+  BOOLEAN esp_profile_loaded;
 } GU_PLATFORM;
 extern GU_PLATFORM Gu;
 

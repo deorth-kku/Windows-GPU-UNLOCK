@@ -6,7 +6,6 @@
 #include "compat/compat.h"
 #include <Protocol/LoadedImage.h>
 #include <Protocol/SimpleFileSystem.h>
-static EFI_GUID WindowsEsp=GU_WINDOWS_ESP_GUID;
 static EFI_GUID WindowsFsGuid=EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID;
 static EFI_GUID WindowsPathGuid=EFI_DEVICE_PATH_PROTOCOL_GUID;
 static EFI_GUID WindowsLoadedGuid=EFI_LOADED_IMAGE_PROTOCOL_GUID;
@@ -27,10 +26,11 @@ static VOID WindowsHdLog(const char *Tag,const char *SigTag,const HARDDRIVE_DEVI
    device path ending in the exact system GPT partition captured in Windows. */
 static UINTN WindowsPartitionPrefix(const EFI_DEVICE_PATH_PROTOCOL *Path) {
   if(!Path){GuLog("windows-loader: candidate path is NULL\n");return 0;}
+  if(!Gu.esp_profile_loaded){GuLog("windows-loader: reject: esp profile not loaded\n");return 0;}
   GuLog("windows-loader: expected HD node MBRType=%u SignatureType=%u PartitionNumber=%llu PartitionStart=%llu PartitionSize=%llu\n",
     (unsigned)MBR_TYPE_EFI_PARTITION_TABLE_HEADER,(unsigned)SIGNATURE_TYPE_GUID,
-    (unsigned long long)GU_WINDOWS_ESP_PARTITION,(unsigned long long)GU_WINDOWS_ESP_START_LBA,(unsigned long long)GU_WINDOWS_ESP_SIZE_LBA);
-  WindowsGuidLog("windows-loader: expected Signature",&WindowsEsp);
+    (unsigned long long)Gu.esp_partition,(unsigned long long)Gu.esp_start_lba,(unsigned long long)Gu.esp_size_lba);
+  WindowsGuidLog("windows-loader: expected Signature",&Gu.esp_guid);
   UINTN total=0;BOOLEAN matched=FALSE;
   for(UINTN nodes=0;nodes<64 && total+4<=4096;nodes++) {
     UINTN n=Path->Length[0]+((UINTN)Path->Length[1]<<8);
@@ -57,8 +57,8 @@ static UINTN WindowsPartitionPrefix(const EFI_DEVICE_PATH_PROTOCOL *Path) {
       HARDDRIVE_DEVICE_PATH hd;memcpy(&hd,Path,sizeof(hd));
       WindowsHdLog("windows-loader: HD node","windows-loader: HD Signature",&hd);
       if(hd.MBRType!=MBR_TYPE_EFI_PARTITION_TABLE_HEADER || hd.SignatureType!=SIGNATURE_TYPE_GUID ||
-         hd.PartitionNumber!=GU_WINDOWS_ESP_PARTITION || hd.PartitionStart!=GU_WINDOWS_ESP_START_LBA || hd.PartitionSize!=GU_WINDOWS_ESP_SIZE_LBA ||
-         memcmp(hd.Signature,&WindowsEsp,sizeof(WindowsEsp))) {
+         hd.PartitionNumber!=Gu.esp_partition || hd.PartitionStart!=Gu.esp_start_lba || hd.PartitionSize!=Gu.esp_size_lba ||
+         memcmp(hd.Signature,&Gu.esp_guid,sizeof(Gu.esp_guid))) {
         GuLog("windows-loader: HD node rejected: field mismatch\n");return 0;
       }
       matched=TRUE;

@@ -14,12 +14,6 @@ UEFI 앱은 GPU 상태를 변경하므로 진행 중 오류에 대비해 작업�
 
 ## 2. 실행 파일과 자산 준비
 
-성공 사례의 EFI SHA-256:
-
-```text
-f5cbf7ae2884d2707ee888589f725b18bbc8b0f9672a511e3467ada02af6b0f5
-```
-
 저장소 루트에서 펌웨어를 `assets/`에 준비한 뒤 실행합니다.
 
 ```powershell
@@ -56,6 +50,8 @@ USB:/
 
 ## 4. 가장 중요한 Windows 인계
 
+### 수동 실행 (preflight / experimental)
+
 펌웨어 화면으로 돌아오면 다음 경로를 선택합니다.
 
 **F7 → Advanced Mode → Boot → Boot Override → Windows Boot Manager**
@@ -64,7 +60,20 @@ USB:/
 
 **F10이나 Save Changes & Reset을 누르지 않습니다.** 언락한 다음 다시 POST/초기화가 수행되면 적용 상태가 사라질 수 있습니다. 이때는 Windows에서 성공을 가정하지 말고 다시 측정해야 합니다. USB 앱이 다시 열렸다면 Esc로 빠져나오며 같은 부팅에서 U를 반복하지 않습니다.
 
-현재 EFI에는 Windows 직접 실행 기능이 없습니다. Boot Override가 없는 보드나 그 기능이 리셋을 수행하는 보드에서의 대체 경로는 미검증입니다.
+### Autostart (자동 인계)
+
+`RTX3090-AUTOLOAD.EFI`를 부팅하면 수동 U 확인이 없습니다. 대신:
+
+1. 프로필·PROM·자산 검증을 통과한 후 **5초 카운트다운**이 시작됩니다.
+2. 카운트다운 중 **Esc**를 누르면 언락을 건너뛰고 기존 상태로 Windows를 부팅합니다.
+3. `U` 키나 다른 키는 카운트다운을 단축하거나 우회할 수 없습니다.
+4. 카운트다운이 끝나면 드라이버 릴리스 → 재검증 → 단일 트랜잭션을 수행합니다.
+5. GPU 리소스 정리가 증명된 경우에만 Windows Boot Manager를 직접 `StartImage`로 시작합니다.
+6. Windows Boot Manager가 반환되면 재시도가 없습니다. 전원을 끄거나 펌웨어 부팅 메뉴를 사용하세요.
+
+카운트다운 시간은 `machine_profile.txt`의 `countdown_seconds`로 설정합니다.
+
+autostart EFI는 USB 부팅 항목에 수동 실행 EFI와 별도로 등록합니다. 두 EFI는 서로 다른 부팅 경로이므로 혼동하지 않습니다.
 
 ## 5. 결과 확인과 실패 대응
 
@@ -76,4 +85,4 @@ Windows 진입 뒤에도 화면은 내장그래픽에 유지하고, [벤치마�
 - 복구 시 USB를 제거하고 Windows Boot Manager로 정상 부팅합니다. 기존 Windows EFI는 수정할 필요가 없습니다.
 - 다음 부팅에서도 자동으로 유지된다고 가정하지 않습니다. 매번 적용 절차를 거친 뒤 필요하면 다시 측정합니다.
 
-내부 디스크의 새 FAT32 파티션을 이용한 자동 부팅은 현재 미구현입니다. 기존 100MB Windows EFI 삭제는 이 절차에 필요하지 않습니다.
+Autostart EFI는 내부 Windows 파티션의 `bootmgfw.efi`를 직접 로드·실행합니다. USB 폴백, BootOrder/BootNext 재작성, ESP 수정을 하지 않습니다. `machine_profile.txt`에 기록된 파티션 GUID·번호·LBA와 정확히 일치하는 단일 파티션만 허용합니다.

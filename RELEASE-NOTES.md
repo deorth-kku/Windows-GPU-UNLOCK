@@ -11,10 +11,5 @@
 
 ZIP은 코드·문서·라이선스·성공 EFI를 포함합니다. **실행 펌웨어 5개는 포함하지 않습니다.** docs/ASSETS.ko.md의 생성 절차와 unlock/assets.json의 해시를 확인하세요. USB 준비·출력 조건·오류 대응은 docs/GUIDE.ko.md에 있습니다.
 
-EFI SHA-256:
-
-```text
-f5cbf7ae2884d2707ee888589f725b18bbc8b0f9672a511e3467ada02af6b0f5
-```
 
 기존 Windows EFI/복구 파티션 변경과 드라이버 교체는 필요하지 않습니다. 내부 디스크 자동 부팅과 Windows 직접 chainload는 이 릴리스에 구현되지 않았습니다.

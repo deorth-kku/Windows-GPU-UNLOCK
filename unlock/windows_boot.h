@@ -2,7 +2,6 @@
 /* Local preparation only, 2026-10-23. GPL-2.0, like the surrounding port. */
 #pragma once
 #include "port.h"
-#include "machine_profile.h" /* generated locally by build.ps1 */
 typedef struct {
   EFI_HANDLE image;
   EFI_DEVICE_PATH_PROTOCOL *path;

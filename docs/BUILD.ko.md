@@ -15,6 +15,43 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\unlock\build.ps1 `
 unlock/build/experimental/entryLatchedSs1Full/RTX3090-EXPERIMENTAL-entryLatchedSs1Full.EFI
 ```
 
+## Autostart (자동 부팅 인계) 빌드
+
+Autostart 변형은 `-MachineProfile`에 simple key=value 텍스트 파일을 지정해 빌드합니다. 이 파일은 로컬 Windows 파티션 식별자와 카운트다운 시간을 담으며 gitignore 대상입니다.
+
+```text
+# unlock/machine_profile.txt
+windows_esp_guid=ce842bcf-937d-4e0e-a191-95568502f089
+windows_esp_partition=1
+windows_esp_start_lba=616448
+windows_esp_size_lba=3998228480
+countdown_seconds=5
+```
+
+| 키 | 설명 |
+|---|---|
+| `windows_esp_guid` | Windows 시스템 파티션의 GPT unique identifier (GUID) |
+| `windows_esp_partition` | GPT 파티션 번호 (1-based) |
+| `windows_esp_start_lba` | 파티션 시작 LBA |
+| `windows_esp_size_lba` | 파티션 크기 (LBA) |
+| `countdown_seconds` | 카운트다운 초 (기본 5) |
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\unlock\build.ps1 `
+  -Clang C:\TOOLS\LLVM20\bin\clang.exe `
+  -LldLink C:\TOOLS\LLVM20\bin\lld-link.exe `
+  -ExperimentalUnlock -StockProfile entryLatchedSs1Preserve `
+  -MachineProfile machine_profile.txt
+```
+
+생성물:
+
+```text
+unlock/build/autostart/RTX3090-AUTOLOAD.EFI
+```
+
+`machine_profile.txt`는 `tools/prepare_usb.py --autostart`로 USB 패키징 시 자동 생성됩니다. PowerShell `Get-Partition -DriveLetter C`에서 파티션 GUID·번호·시작 LBA·크기를 수집해 파일에 기록합니다.
+
 빌드는 PE/COFF 구조도 검사합니다. 공개 준비 과정에서 clang 20.1.8로 재빌드했고 실제 성공한 USB EFI와 SHA-256이 일치했습니다. 사용자의 새 빌드는 `Get-FileHash`로 비교하세요. 새 빌드의 `HardwareTested=false`는 자동 빌드 과정이 실제 하드웨어 시험을 수행하지 않았다는 뜻입니다. 성공 기록은 별도 `evidence/`에 둡니다.
 
 ## Host mock 검사

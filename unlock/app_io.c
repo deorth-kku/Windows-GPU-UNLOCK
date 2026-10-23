@@ -5,7 +5,7 @@
 #include <Protocol/LoadedImage.h>
 #include <Protocol/SimpleFileSystem.h>
 #include <Guid/FileInfo.h>
-static EFI_GUID LoadedGuid=EFI_LOADED_IMAGE_PROTOCOL_GUID,PathGuid=EFI_DEVICE_PATH_PROTOCOL_GUID,
+static EFI_GUID LoadedGuid=EFI_LOADED_IMAGE_PROTOCOL_GUID,
   FsGuid=EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID,InfoGuid=EFI_FILE_INFO_ID;
 static EFI_SYSTEM_TABLE *Table;
 static EFI_FILE_PROTOCOL *Root,*Parent,*Run,*Report;
@@ -41,19 +41,7 @@ VOID GuLog(const char *Format,...) {
   GuLogText(text);
 }
 BOOLEAN GuLogReady(VOID){return Report && !LogFault;}
-static BOOLEAN UsbPath(EFI_HANDLE Handle) {
-  EFI_DEVICE_PATH_PROTOCOL *path=NULL;
-  if(EFI_ERROR(Table->BootServices->HandleProtocol(Handle,&PathGuid,(VOID **)&path)) || !path)return FALSE;
-  UINTN total=0;BOOLEAN usb=FALSE;
-  for(UINTN nodes=0;nodes<64 && total+4<=4096;nodes++) {
-    UINTN n=path->Length[0]+((UINTN)path->Length[1]<<8);
-    if(n<4 || n>4096-total)return FALSE;
-    if(path->Type==MESSAGING_DEVICE_PATH && path->SubType==MSG_USB_DP && n==sizeof(USB_DEVICE_PATH))usb=TRUE;
-    if(path->Type==END_DEVICE_PATH_TYPE)return usb && n==4 && path->SubType==END_ENTIRE_DEVICE_PATH_SUBTYPE;
-    total+=n;path=(VOID *)((UINT8 *)path+n);
-  }
-  return FALSE;
-}
+
 static EFI_STATUS Metadata(EFI_FILE_PROTOCOL *File,BOOLEAN Directory,UINTN Expected) {
   union {EFI_FILE_INFO info;UINT8 bytes[512];} data;UINTN n=sizeof(data);
   EFI_STATUS status=File->GetInfo(File,&InfoGuid,&n,&data);
@@ -63,11 +51,116 @@ static EFI_STATUS Metadata(EFI_FILE_PROTOCOL *File,BOOLEAN Directory,UINTN Expec
     (!Directory && data.info.FileSize!=Expected))return EFI_COMPROMISED_DATA;
   return EFI_SUCCESS;
 }
+/* Parse machine_profile.txt (key=value lines) into the runtime ESP target.
+   The booted ESP is the only accepted source; nothing is baked into the image. */
+static UINTN GuHexVal(char c) {
+  if(c>='0'&&c<='9')return (UINTN)(c-'0');
+  if(c>='a'&&c<='f')return (UINTN)(c-'a')+10;
+  if(c>='A'&&c<='F')return (UINTN)(c-'A')+10;
+  return 255;
+}
+static BOOLEAN GuParseHex(const char *s,UINTN n,UINT64 *out) {
+  UINT64 v=0;UINTN i;
+  if(!s)return FALSE;
+  for(i=0;i<n;i++){UINTN d=GuHexVal(s[i]);if(d>15)return FALSE;v=(v<<4)|d;}
+  *out=v;return TRUE;
+}
+static BOOLEAN GuParseDec(const char *s,UINT64 *out) {
+  UINT64 v=0;
+  if(!s || !*s)return FALSE;
+  while(*s){if(*s<'0'||*s>'9')return FALSE;v=v*10+(UINT64)(*s++-'0');}
+  *out=v;return TRUE;
+}
+static EFI_STATUS GuParseEspProfile(const char *text,UINTN len) {
+  char buf[1024];UINTN i,k;
+  UINT64 partition=0,start_lba=0,size_lba=0;
+  UINT32 countdown=5;
+  BOOLEAN have_part=FALSE,have_start=FALSE,have_size=FALSE,have_guid=FALSE;
+  EFI_GUID guid;
+  if(len>=sizeof(buf))return EFI_COMPROMISED_DATA;
+  memcpy(buf,text,len);buf[len]=0;
+  for(i=0;;) {
+    UINTN start=i,j=i;
+    while(buf[j] && buf[j]!='\n')j++;
+    while(j>start && (buf[j-1]=='\r'||buf[j-1]==' '||buf[j-1]=='\t'))j--;
+    if(j>start) {
+      char *eq=0;
+      for(k=start;k<j;k++)if(buf[k]=='=' ){eq=buf+k;break;}
+      if(eq) {
+        *eq=0;
+        char *key=buf+start,*val=eq+1;
+        while(*key==' '||*key=='\t')key++;
+        while(*val==' '||*val=='\t')val++;
+        {UINTN vl=(UINTN)strlen(val);while(vl>0 && (val[vl-1]==' '||val[vl-1]=='\t'))val[--vl]=0;}
+        if(!strcmp(key,"windows_esp_guid")) {
+          char d[33];UINTN di=0;UINT64 t;
+          for(k=0;val[k] && di<32;k++)if(val[k]!='-')d[di++]=val[k];
+          d[di]=0;
+          if(di==32) {
+            if(GuParseHex(d,8,&t))guid.Data1=(UINT32)t;
+            if(GuParseHex(d+8,4,&t))guid.Data2=(UINT16)t;
+            if(GuParseHex(d+12,4,&t))guid.Data3=(UINT16)t;
+            for(k=0;k<8;k++)if(GuParseHex(d+16+2*k,2,&t))guid.Data4[k]=(UINT8)t;
+            have_guid=TRUE;
+          }
+        } else if(!strcmp(key,"windows_esp_partition")) {
+          if(GuParseDec(val,&partition))have_part=TRUE;
+        } else if(!strcmp(key,"windows_esp_start_lba")) {
+          if(GuParseDec(val,&start_lba))have_start=TRUE;
+        } else if(!strcmp(key,"windows_esp_size_lba")) {
+          if(GuParseDec(val,&size_lba))have_size=TRUE;
+        } else if(!strcmp(key,"countdown_seconds")) {
+          UINT64 cd=0;
+          if(GuParseDec(val,&cd) && cd>=1 && cd<=3600)countdown=(UINT32)cd;
+        }
+      }
+    }
+    if(buf[j]==0)break;
+    i=j+1;
+  }
+  if(!(have_guid&&have_part&&have_start&&have_size))return EFI_COMPROMISED_DATA;
+  Gu.esp_guid=guid;
+  Gu.esp_partition=partition;
+  Gu.esp_start_lba=start_lba;
+  Gu.esp_size_lba=size_lba;
+  Gu.countdown_seconds=countdown;
+  Gu.esp_profile_loaded=TRUE;
+  GuLog("esp-profile: partition=%llu start_lba=%llu size_lba=%llu countdown=%u\n",
+    (unsigned long long)partition,(unsigned long long)start_lba,(unsigned long long)size_lba,(unsigned)countdown);
+  return EFI_SUCCESS;
+}
+static EFI_STATUS GuReadEspProfile(EFI_FILE_PROTOCOL *Parent) {
+  EFI_FILE_PROTOCOL *file=NULL;
+  union {EFI_FILE_INFO info;UINT8 bytes[512];} data;
+  UINTN n=sizeof(data),bytes=0;
+  EFI_STATUS status=Parent->Open(Parent,&file,L"\\machine_profile.txt",EFI_FILE_MODE_READ,0);
+  if(EFI_ERROR(status))return status;
+  n=sizeof(data);
+  status=file->GetInfo(file,&InfoGuid,&n,&data);
+  if(EFI_ERROR(status) || n<SIZE_OF_EFI_FILE_INFO || n>sizeof(data) ||
+     data.info.Size>n || data.info.Size<SIZE_OF_EFI_FILE_INFO ||
+     (data.info.Attribute&EFI_FILE_DIRECTORY) || data.info.FileSize<1 || data.info.FileSize>1024) {
+    file->Close(file);return EFI_COMPROMISED_DATA;
+  }
+  {
+    char *text=GuAlloc(data.info.FileSize+1);
+    if(!text){file->Close(file);return EFI_OUT_OF_RESOURCES;}
+    bytes=0;
+    status=file->Read(file,&bytes,text);
+    if(!EFI_ERROR(status)){text[bytes]=0;status=file->Close(file);}
+    if(!EFI_ERROR(status))status=GuParseEspProfile(text,bytes);
+    if(EFI_ERROR(status))(void)file->Close(file);
+    GuFree(text);
+  }
+  return status;
+}
 EFI_STATUS GuIoOpen(EFI_HANDLE Image,EFI_SYSTEM_TABLE *St) {
   Table=St;Root=Parent=Run=Report=NULL;LogFault=FALSE;memset(GuAssets,0,sizeof(GuAssets));
   EFI_LOADED_IMAGE_PROTOCOL *loaded=NULL;EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *fs=NULL;
   EFI_STATUS status=Table->BootServices->HandleProtocol(Image,&LoadedGuid,(VOID **)&loaded);
-  if(EFI_ERROR(status) || !loaded || !UsbPath(loaded->DeviceHandle))return EFI_UNSUPPORTED;
+  /* No USB requirement: the payload folder is opened from the booted volume
+     root below, so it is guaranteed to live on the booted EFI partition. */
+  if(EFI_ERROR(status) || !loaded)return EFI_UNSUPPORTED;
   status=Table->BootServices->HandleProtocol(loaded->DeviceHandle,&FsGuid,(VOID **)&fs);
   if(EFI_ERROR(status) || !fs)return EFI_UNSUPPORTED;
   status=fs->OpenVolume(fs,&Root);if(EFI_ERROR(status) || !Root)return EFI_DEVICE_ERROR;
@@ -78,6 +171,7 @@ EFI_STATUS GuIoOpen(EFI_HANDLE Image,EFI_SYSTEM_TABLE *St) {
 #endif
   if(EFI_ERROR(status) || !Parent)return EFI_NOT_FOUND;
   status=Metadata(Parent,TRUE,0);if(EFI_ERROR(status))return status;
+  status=GuReadEspProfile(Parent);if(EFI_ERROR(status))return status;
   for(UINTN slot=0;slot<100;slot++) {
     CHAR16 name[]=L"RUN00";name[3]=(CHAR16)('0'+slot/10);name[4]=(CHAR16)('0'+slot%10);
     EFI_FILE_PROTOCOL *existing=NULL;

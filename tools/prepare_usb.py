@@ -2,6 +2,8 @@
 import argparse
 import hashlib
 import json
+import subprocess
+import sys
 from pathlib import Path
 import shutil
 import tempfile
@@ -27,7 +29,52 @@ def safe_file(root, relative):
     return path
 
 
-def prepare(root, assets, output):
+def collect_machine_profile():
+    """Collect the Windows system partition identity via PowerShell.
+
+    Returns a dict with keys: windows_esp_guid, windows_esp_partition,
+    windows_esp_start_lba, windows_esp_size_lba.
+    """
+    esp_gpt_type = '{c12a7328-f81f-11d2-ba4b-00a0c93ec93b}'
+    ps = (
+        "$d = (Get-Partition -DriveLetter C).DiskNumber; "
+        "$p = Get-Partition -DiskNumber $d | Where-Object GptType -eq '" + esp_gpt_type + "'; "
+        "if (-not $p) { exit 1 }; "
+        "$g = $p.Guid -replace [char]123 -replace [char]125; "
+        "$n = $p.PartitionNumber; "
+        "$s = [math]::Floor($p.Offset / 512); "
+        "$z = [math]::Floor($p.Size / 512); "
+        "Write-Output \"windows_esp_guid=$g\"; "
+        "Write-Output \"windows_esp_partition=$n\"; "
+        "Write-Output \"windows_esp_start_lba=$s\"; "
+        "Write-Output \"windows_esp_size_lba=$z\""
+    )
+    result = subprocess.run(
+        ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', ps],
+        capture_output=True, text=True, timeout=30,
+    )
+    if result.returncode != 0:
+        raise ValueError('Failed to collect partition info: ' + result.stderr.strip())
+    kv = {}
+    for line in result.stdout.splitlines():
+        line = line.strip()
+        if '=' in line:
+            k, v = line.split('=', 1)
+            kv[k.strip()] = v.strip()
+    for key in ('windows_esp_guid', 'windows_esp_partition',
+                'windows_esp_start_lba', 'windows_esp_size_lba'):
+        if key not in kv:
+            raise ValueError('Missing partition field: ' + key)
+    return kv
+
+
+def write_machine_profile(kv, path):
+    """Write the KV dict as a simple key=value text file."""
+    lines = [f'{k}={v}' for k, v in kv.items()]
+    path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+
+def prepare(root, assets, output, autostart=False):
     if output.exists() or output.is_symlink() or not output.parent.is_dir():
         raise ValueError('Choose a new output folder under an existing local parent')
     source = load(root / 'SOURCE-MANIFEST.json')
@@ -75,6 +122,11 @@ def prepare(root, assets, output):
         shutil.copyfile(root / 'LICENSE', payload / 'LICENSE')
         shutil.copyfile(root / 'THIRD_PARTY_NOTICES.md', payload / 'THIRD_PARTY_NOTICES.md')
         shutil.copytree(root / 'docs', payload / 'docs')
+        if autostart:
+            kv = collect_machine_profile()
+            kv.setdefault('countdown_seconds', '5')
+            write_machine_profile(kv, payload / 'machine_profile.txt')
+            print('Collected machine profile:', kv)
         (stage / 'USB-README.md').write_text(
             '# Windows GPU UNLOCK\n\nRead RTX3090-UNLOCK/docs/GUIDE.ko.md before booting.\n'
             'Full public guide: https://github.com/impacifist/Windows-GPU-UNLOCK\n'
@@ -96,8 +148,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--assets', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
+    parser.add_argument('--autostart', action='store_true',
+                        help='Collect local Windows partition info and include machine_profile.txt')
     args = parser.parse_args()
-    prepare(Path(__file__).resolve().parents[1], args.assets.resolve(), args.output.absolute())
+    prepare(Path(__file__).resolve().parents[1], args.assets.resolve(),
+            args.output.absolute(), autostart=args.autostart)
 
 
 if __name__ == '__main__':

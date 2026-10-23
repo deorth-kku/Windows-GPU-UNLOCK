@@ -320,17 +320,17 @@ static EFI_STATUS Arm(VOID) {
   EFI_STATUS status=Table->ConIn->Reset(Table->ConIn,FALSE);if(EFI_ERROR(status))return status;
 #if defined(GU_WINDOWS_HANDOFF)
   GuLog("LOCAL AUTOSTART: profile=%s exact RTX3080 Ti / AMD display; verified PROM and assets.\n",GU_STOCK_PROFILE_NAME);
-  GuLogText("Automatic unlock in 5 seconds. Press Esc to skip unlock and boot Windows normally.\n");
+  GuLog("Automatic unlock in %u seconds. Press Esc to skip unlock and boot Windows normally.\n",(unsigned)Gu.countdown_seconds);
   if(PendingOwner.agent)GuLogText("After countdown: release target firmware driver, recheck, attempt once.\n");
   if(!GuLogReady())return EFI_DEVICE_ERROR;
-  for(UINTN i=0;i<=50;i++) {
+  for(UINTN i=0;i<=(UINTN)Gu.countdown_seconds*10;i++) {
     EFI_INPUT_KEY key;status=Table->ConIn->ReadKeyStroke(Table->ConIn,&key);
     if(!EFI_ERROR(status)) {
       if(key.ScanCode==0x17 || key.UnicodeChar==27)return EFI_ABORTED;
       /* U and other keys cannot bypass the countdown or shorten it. */
     } else if(status!=EFI_NOT_READY)return status;
-    if(i%10==0 && i<50){GuLog("Countdown: %u seconds; Esc skips unlock.\n",(unsigned)(5-i/10));if(!GuLogReady())return EFI_DEVICE_ERROR;}
-    if(i<50){status=Gu.bs->Stall(100000);if(EFI_ERROR(status))return status;}
+    if(i%10==0 && i<(UINTN)Gu.countdown_seconds*10){GuLog("Countdown: %u seconds; Esc skips unlock.\n",(unsigned)(Gu.countdown_seconds-i/10));if(!GuLogReady())return EFI_DEVICE_ERROR;}
+    if(i<(UINTN)Gu.countdown_seconds*10){status=Gu.bs->Stall(100000);if(EFI_ERROR(status))return status;}
   }
   return Gu.profile_verified && !Gu.fault && GuLogReady()?EFI_SUCCESS:EFI_ACCESS_DENIED;
 #else
@@ -384,7 +384,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE Image,EFI_SYSTEM_TABLE *St) {
   Stage="usb-log";EFI_STATUS status=GuIoOpen(Image,St);BOOLEAN attempted=FALSE,release_attempted=FALSE;
   if(EFI_ERROR(status))goto finish;
 #if defined(GU_WINDOWS_HANDOFF)
-  GuLog("BUILD MODE: LOCAL AUTOSTART; compile-time profile=%s; 5-second Esc countdown, one attempt, direct Windows handoff.\n",GU_STOCK_PROFILE_NAME);
+  GuLog("BUILD MODE: LOCAL AUTOSTART; runtime profile=%s; %u-second Esc countdown, one attempt, direct Windows handoff.\n",GU_STOCK_PROFILE_NAME,(unsigned)Gu.countdown_seconds);
 #elif defined(GU_EXPERIMENTAL_3090)
   GuLog("BUILD MODE: EXPERIMENTAL MANUAL UNLOCK; compile-time profile=%s. The shared I/O preflight banner above is superseded: exact-card checks and manual U can authorize one stock transaction.\n",GU_STOCK_PROFILE_NAME);
 #endif
