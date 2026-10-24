@@ -2,13 +2,13 @@
   "project": "Windows GPU UNLOCK",
   "upstream_commit": "a08254d269af30ace9e57237abd3d8e6c261e8f5",
   "profile": "entryLatchedSs1Full",
-  "efi_sha256": "d09f24bf61df61cbea98febf9d39857bcc4b60cb71e04aefa83530bc79e279ac",
+  "efi_sha256": "baec8b464546bdb73723f77f0adbc40923128c96db4e63ce1d410307f7b4e77b",
   "efi_bytes": 73216,
   "compiler": "clang 20.1.8, x86_64-pc-windows-msvc",
   "corresponding_sources": [
     {
       "path": "unlock/app.c",
-      "sha256": "eadaf67bf54679258b8de24c205b0be9b09c4cb69218897c0fe8328f65934f90"
+      "sha256": "50dc9f7871c5361f56fa52d196e1d456b001a5221cbabf77d930c7c6b818ca37"
     },
     {
       "path": "unlock/app.h",
@@ -16,11 +16,11 @@
     },
     {
       "path": "unlock/app_io.c",
-      "sha256": "5653dbfc4e88a8db845d37e06c9197c3bf8afc5f48dea8bfc8c2bc2a6d737a4f"
+      "sha256": "d737b13999aeaa4b3231640ed4714224489c233abe97257cc14f9e88fa7f064e"
     },
     {
       "path": "unlock/app_io.h",
-      "sha256": "d055d0d217d1b9f187d7fd911e7b57afd8a64c6017241c8425294926435fb0e5"
+      "sha256": "23388bea551c5ccd5cb4182cd43661a9befd2ba1a8b019f8a4bd5077a2de167a"
     },
     {
       "path": "unlock/checks.c",

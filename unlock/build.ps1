@@ -5,6 +5,7 @@ param(
  [string]$Python='python',
  [switch]$ExperimentalUnlock,
  [switch]$Autostart,
+ [switch]$PublishBoot,
  [ValidateSet('original03100062','observed03000062','entryLatchedSs1Preserve','entryLatchedSs1Full')][string]$StockProfile
 )
 $ErrorActionPreference='Stop'
@@ -55,5 +56,11 @@ try {
   Headers=@(Get-ChildItem -LiteralPath . -Recurse -File -Filter '*.h' | Where-Object {$_.FullName -notlike '*\build\*'} | Sort-Object FullName | ForEach-Object {[ordered]@{Path=$_.FullName.Substring($PSScriptRoot.Length+1);Sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash}});
   Sources=@($sources | ForEach-Object {[ordered]@{Path="$_.c";Sha256=(Get-FileHash -LiteralPath "$_.c" -Algorithm SHA256).Hash}})
   } | ConvertTo-Json -Depth 5 | Set-Content -Encoding UTF8 -LiteralPath "$out/build-manifest.json"
+ if($PublishBoot){
+  $bootDest=Join-Path -Path (Join-Path -Path $PSScriptRoot '..') -ChildPath 'release/EFI/BOOT/BOOTX64.EFI'
+  New-Item -ItemType Directory -Path (Split-Path -Path $bootDest -Parent) -Force | Out-Null
+  Copy-Item -LiteralPath "$out/$name.EFI" -Destination $bootDest -Force
+  "Published $name.EFI -> $bootDest"
+ }
  "Built $name.EFI; ExperimentalUnlock=$([bool]$ExperimentalUnlock); hardware untested."
 } finally {Pop-Location}

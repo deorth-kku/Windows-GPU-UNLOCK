@@ -10,6 +10,21 @@ static EFI_GUID LoadedGuid=EFI_LOADED_IMAGE_PROTOCOL_GUID,
 static EFI_SYSTEM_TABLE *Table;
 static EFI_FILE_PROTOCOL *Root,*Parent,*Run,*Report;
 static BOOLEAN LogFault;
+/* Log lines are batched in RAM: a per-line Write+Flush on the FAT volume
+   costs a directory/FAT commit on every line. Flush at half full, on close,
+   and on Halt so every failure path still reaches the file. */
+static char LogBuffer[4096];
+static UINTN LogBufferLen=0;
+static VOID LogError(VOID);
+/* Caller must guarantee Report is valid and !LogFault. */
+static VOID LogFlush(VOID) {
+  if(!LogBufferLen)return;
+  UINTN written=LogBufferLen;
+  EFI_STATUS status=Report->Write(Report,&written,LogBuffer);
+  if(EFI_ERROR(status) || written!=LogBufferLen){LogError();return;}
+  LogBufferLen=0;
+  if(EFI_ERROR(Report->Flush(Report)))LogError();
+}
 #ifdef GU_HOST_WRITE_TEST
 /* Host unit-test hook: point GuLoadEspProfile at a mocked directory handle. */
 VOID GuIoTestSetParent(EFI_FILE_PROTOCOL *P){Parent=P;}
@@ -34,15 +49,34 @@ VOID GuConsole(const char *Text) {
 VOID GuLogText(const char *Text) {
   GuConsole(Text);
   if(!Report || LogFault){LogError();return;}
-  UINTN expected=strlen(Text),written=expected;
-  EFI_STATUS status=Report->Write(Report,&written,(VOID *)Text);
-  if(EFI_ERROR(status) || written!=expected || EFI_ERROR(Report->Flush(Report)))LogError();
+  UINTN expected=strlen(Text);
+  if(expected>=sizeof(LogBuffer)) {
+    /* Longer than the batch buffer (not expected: GuLog caps at 1024):
+       write directly, keeping the old per-write durability for this line.
+       Flush pending lines first: Report has no APPEND mode, so a direct
+       write lands at the current file position and would otherwise be
+       followed by the earlier buffered lines (order inversion). */
+    LogFlush();
+    if(LogFault)return;
+    UINTN written=expected;
+    EFI_STATUS status=Report->Write(Report,&written,(VOID *)Text);
+    if(EFI_ERROR(status) || written!=expected || EFI_ERROR(Report->Flush(Report)))LogError();
+    return;
+  }
+  if(LogBufferLen+expected>sizeof(LogBuffer))LogFlush();
+  if(LogFault)return;
+  memcpy(LogBuffer+LogBufferLen,Text,expected);
+  LogBufferLen+=expected;
+  if(LogBufferLen>=sizeof(LogBuffer)/2)LogFlush();
 }
 VOID GuLog(const char *Format,...) {
   char text[1024];va_list args;va_start(args,Format);
   size_t n=GuFormatV(text,sizeof(text),Format,args);va_end(args);
   if(n>=sizeof(text)){LogError();GuConsole("Log format or length error.\n");return;}
   GuLogText(text);
+}
+VOID GuLogFlush(VOID) {
+  if(Report && !LogFault)LogFlush();
 }
 BOOLEAN GuLogReady(VOID){return Report && !LogFault;}
 
@@ -262,6 +296,10 @@ VOID GuReleaseAssets(VOID) {
 }
 EFI_STATUS GuIoClose(VOID) {
   EFI_FILE_PROTOCOL **files[]={&Report,&Run,&Parent,&Root};EFI_STATUS result=EFI_SUCCESS;
+  /* Land every batched log line before the safe-to-return gate: a retained
+     or faulted state can reach this point without any Halt path, and the
+     FINAL line must not be lost behind the early return. */
+  GuLogFlush();
   if(!GuSafeToReturn())return EFI_ACCESS_DENIED;
   for(UINTN i=0;i<4;i++)if(*files[i]) {
     /* EFI_FILE_PROTOCOL.Close invalidates the handle even on error. */

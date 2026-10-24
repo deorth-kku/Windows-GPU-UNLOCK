@@ -353,6 +353,8 @@ static EFI_STATUS Arm(VOID) {
 static VOID Halt(VOID) {
   Gu.retained=TRUE;
   GuLogText("STOP: cleanup cannot be proven. Resources remain reserved.\nPOWER OFF using the physical power button; do not continue to Windows.\n");
+  /* Halt never reaches GuIoClose; land the batched log before stalling. */
+  GuLogFlush();
   /* No ResetSystem, ExitBootServices, retry, protocol close or memory release. */
   for(;;)Gu.bs->Stall(1000000);
 }

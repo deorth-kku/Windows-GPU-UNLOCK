@@ -329,6 +329,61 @@
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
+      "path": "benchmark/results/20261024-125820-847/gpu-before.csv",
+      "bytes": 70,
+      "sha256": "756c704f9776409f8126f48d16aa1fe63c34e02be6dc542e3114449ea49c984a"
+    },
+    {
+      "path": "benchmark/results/20261024-125820-847/summary.json",
+      "bytes": 518,
+      "sha256": "618903f638db0c6f31b5388583abbe8daab745bf529f00909701d3de97d45369"
+    },
+    {
+      "path": "benchmark/results/20261024-125820-847/trial-1-gpu-after.csv",
+      "bytes": 202,
+      "sha256": "f90ffc0a55ecda0c89b725b0b366c06b49cac73024c7d9b5ff66b2e7dd39057b"
+    },
+    {
+      "path": "benchmark/results/20261024-125820-847/trial-1.json",
+      "bytes": 696,
+      "sha256": "9fd6e82d9d18556cc7d64c6b9df2135568a0f6e1b17bb4f9df43744706c24fca"
+    },
+    {
+      "path": "benchmark/results/20261024-125820-847/trial-1.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmark/results/20261024-125820-847/trial-2-gpu-after.csv",
+      "bytes": 202,
+      "sha256": "75a95a73c34bceef7dd9b2085e19ee67fa57253e3daa50c366509be1b9d32b16"
+    },
+    {
+      "path": "benchmark/results/20261024-125820-847/trial-2.json",
+      "bytes": 696,
+      "sha256": "aba6219627b2c85fa7a0dfe10be86c4b4d3074bc892f53d538d8a42c04b48d9f"
+    },
+    {
+      "path": "benchmark/results/20261024-125820-847/trial-2.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "benchmark/results/20261024-125820-847/trial-3-gpu-after.csv",
+      "bytes": 202,
+      "sha256": "61713e7a1589ba0be4b43d22b6518585e0a872809e694aec502eb878e528cb43"
+    },
+    {
+      "path": "benchmark/results/20261024-125820-847/trial-3.json",
+      "bytes": 696,
+      "sha256": "9b89b87c33cea54b9bee0e18c8a9b40edf612d1f3c1300dcafa2e9afd7f661a1"
+    },
+    {
+      "path": "benchmark/results/20261024-125820-847/trial-3.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
       "path": "benchmark/run-benchmark.ps1",
       "bytes": 3262,
       "sha256": "bf1706eb1bbebabe306864a467f9854ba9477febca3550e5c706f94d13680479"
@@ -396,12 +451,12 @@
     {
       "path": "release/EFI/BOOT/BOOTX64.EFI",
       "bytes": 73216,
-      "sha256": "d09f24bf61df61cbea98febf9d39857bcc4b60cb71e04aefa83530bc79e279ac"
+      "sha256": "baec8b464546bdb73723f77f0adbc40923128c96db4e63ce1d410307f7b4e77b"
     },
     {
       "path": "release/provenance.json",
       "bytes": 9135,
-      "sha256": "cdb4b85bfa32acc369f1cc4229c975185b1c897880fd96e4dac4f159afd399b8"
+      "sha256": "77bfac65f8647e5ce5422d03c4240d2cd0822ef36ae4e28df7799ba8d0b54f54"
     },
     {
       "path": "tools/.pytest_cache/.gitignore",
@@ -445,8 +500,8 @@
     },
     {
       "path": "unlock/app.c",
-      "bytes": 31208,
-      "sha256": "eadaf67bf54679258b8de24c205b0be9b09c4cb69218897c0fe8328f65934f90"
+      "bytes": 31300,
+      "sha256": "50dc9f7871c5361f56fa52d196e1d456b001a5221cbabf77d930c7c6b818ca37"
     },
     {
       "path": "unlock/app.h",
@@ -455,13 +510,13 @@
     },
     {
       "path": "unlock/app_io.c",
-      "bytes": 13513,
-      "sha256": "5653dbfc4e88a8db845d37e06c9197c3bf8afc5f48dea8bfc8c2bc2a6d737a4f"
+      "bytes": 15189,
+      "sha256": "d737b13999aeaa4b3231640ed4714224489c233abe97257cc14f9e88fa7f064e"
     },
     {
       "path": "unlock/app_io.h",
-      "bytes": 276,
-      "sha256": "d055d0d217d1b9f187d7fd911e7b57afd8a64c6017241c8425294926435fb0e5"
+      "bytes": 299,
+      "sha256": "23388bea551c5ccd5cb4182cd43661a9befd2ba1a8b019f8a4bd5077a2de167a"
     },
     {
       "path": "unlock/assets.json",
@@ -470,93 +525,98 @@
     },
     {
       "path": "unlock/build/autostart/app.obj",
-      "bytes": 28458,
-      "sha256": "a159d9172a95cc6cf191c7eabd8a85f0c06c3c53a5fd7ba7cfe139f9995ec0e9"
+      "bytes": 28641,
+      "sha256": "15f012d7ccfe5517968028cf345b39721caa0b7f5dc043f61a2dbec43840cc76"
     },
     {
       "path": "unlock/build/autostart/app_io.obj",
-      "bytes": 14412,
-      "sha256": "3eb3dc97ba76661af06c4614d4753f444843c4e635e930cb762a8f04f466bc4b"
+      "bytes": 15059,
+      "sha256": "2fd22e43627fd4cd9e4352c703f5ddd8209a44c0ca4ac967634d73d706ff0d30"
     },
     {
       "path": "unlock/build/autostart/build-manifest.json",
       "bytes": 13707,
-      "sha256": "b8ac7fea57dd3de92085e6c96002701b1d430a72fb44ede5474f8cedee099209"
+      "sha256": "d7623c98f7d413440008b63655981a6d909f31afbc11f7c63dcbafa3a1869278"
     },
     {
       "path": "unlock/build/autostart/checks.obj",
       "bytes": 2181,
-      "sha256": "e58ceba261feaebd182dde8154ad3b3ad7b3daf4f7ee1c681cf94f4ddb7950af"
+      "sha256": "09fa85304bbab5874af57778d088712ff28bfc1db8beacaffd48dc991f69f59e"
     },
     {
       "path": "unlock/build/autostart/compat.obj",
       "bytes": 3970,
-      "sha256": "9809264e9b1ef1602906749ae53865dcec979cf7835e974cd71d45dd756a62ae"
+      "sha256": "e4dabaac5663a2aca9e164d1b67345f5eea4da8fd0f3b6d85dcfa0aedc621fac"
     },
     {
       "path": "unlock/build/autostart/format.obj",
       "bytes": 2195,
-      "sha256": "e9299acaf16172546613529fe949edb6bfffe5f435e99e9450cff93dc2939d99"
+      "sha256": "4a8542dd09b9e6dc048eb1172a3ae94f570ab0a3bea56f0433d60ce67f908502"
     },
     {
       "path": "unlock/build/autostart/ownership.obj",
       "bytes": 4738,
-      "sha256": "758ffd542f42195fea1c6c64e8e7d4f250693525c25be30975b71778e7b00781"
+      "sha256": "e3262d8059c30102fcb3ade6da8dc9827665bab1e3f31f50b708e2034d8571b3"
     },
     {
       "path": "unlock/build/autostart/pe-verification.json",
       "bytes": 322,
-      "sha256": "2a613194ae1ec5bb7eaad71f5850ad70a107a71627f8585291b9ee69bbf9dd8a"
+      "sha256": "22e2a6178304a505a681fa1388a6a6fdffefc42a5c85e1444ee0a75deb99a1db"
     },
     {
       "path": "unlock/build/autostart/port.obj",
       "bytes": 10277,
-      "sha256": "b991d039bbf4ff06e52a43ad1921e548ec32e9bbbe5c9e2c080049b1d7e9f912"
+      "sha256": "ce6c7162dc6223ab3bcc02e3604128d27867c5a93f2acd37b00431928c74d295"
+    },
+    {
+      "path": "unlock/build/autostart/RTX3090-AUTOLOAD.EFI",
+      "bytes": 73216,
+      "sha256": "baec8b464546bdb73723f77f0adbc40923128c96db4e63ce1d410307f7b4e77b"
     },
     {
       "path": "unlock/build/autostart/RTX3090-AUTOLOAD.map",
-      "bytes": 49262,
-      "sha256": "aac8928f0e75515d4e8ac42f8b4916691d571abf7cde12eb287daf6fb42773e7"
+      "bytes": 49659,
+      "sha256": "e8d1e071867779bc19947f4ecbd04716fe0893fc56e555c73a9b73905c2e2ad1"
     },
     {
       "path": "unlock/build/autostart/runtime.obj",
       "bytes": 901,
-      "sha256": "a624b3760a731bddb43e7a1aab8b4828a2a7dcc8ccd3c8d6e2f52c5b3ac26c52"
+      "sha256": "25c3acb480b9095683502cf75a489dd908a951460d4a26cea43197bb27d1fddb"
     },
     {
       "path": "unlock/build/autostart/sha256.obj",
       "bytes": 2387,
-      "sha256": "405de35c489c9b6bff34fa55299e1e129760e4b59240f51a9765e2a3bf2e992e"
+      "sha256": "6546155f8e620eb0dc62337f9adf2528a815300b73063156c0eabeefe813f944"
     },
     {
       "path": "unlock/build/autostart/vendor_gfw_eval.obj",
       "bytes": 785,
-      "sha256": "605bfc1edfb3c996cd4830adaa21607efbe4903628e7648d7260c50845e661bf"
+      "sha256": "848628f9978a8b4bfb049967734bfab74cda0e1f5d4a6d2d7cb023df06d6f5ce"
     },
     {
       "path": "unlock/build/autostart/vendor_layout_610.obj",
       "bytes": 3804,
-      "sha256": "b4e047be87687d833a6a61b156a6857d9ac2ecfea15335fcaca85bb0426d48bb"
+      "sha256": "3deafcd77a28cf8588baf39ac327fee4b59ccc07fd5ac4a0430eee306f1638a0"
     },
     {
       "path": "unlock/build/autostart/vendor_prep_610.obj",
       "bytes": 9121,
-      "sha256": "fa5e346d219f47eafb8286a7013bd7b9db290663314549aed42b4267450ab5da"
+      "sha256": "94520da9719d1e7c338cea19f033bb0afaa9ca2e0b35a85d786e4c41de731d19"
     },
     {
       "path": "unlock/build/autostart/vendor_unlock_610.obj",
       "bytes": 49972,
-      "sha256": "550d1567cf9b8afe365085226223361acd976be1bc243a96f37c9ded3583e276"
+      "sha256": "a21244eb5c8bf37b4a2e7b9cc3316edfe0701098427408b068cef1e8977ef14e"
     },
     {
       "path": "unlock/build/autostart/vendor_vbios_610.obj",
       "bytes": 9192,
-      "sha256": "63a87a4b9ef52b32412d6487ac6ac91a6ac1c5cfdbad1de7236ce2b640979665"
+      "sha256": "e3de9de6364b404822b26ddf010c66aaf4dc5ee545b0cbdeb53d391e2fedb2d4"
     },
     {
       "path": "unlock/build/autostart/windows_boot.obj",
       "bytes": 12155,
-      "sha256": "da6c4c38724e0a4491406506605b7f687bc3f0e033c656553522c7da60d49f1c"
+      "sha256": "e419d7609fef5b54d0b37dee0d33150672ad4d485087f2e5afb2d66f9deab02a"
     },
     {
       "path": "unlock/build/experimental/entryLatchedSs1Preserve/app.obj",
@@ -654,6 +714,16 @@
       "sha256": "47baae6c9aa079bbab1e7f37727e796840012855840ff790e0780e6cd536ea1a"
     },
     {
+      "path": "unlock/build/tests/default/esp-profile-tests.exe",
+      "bytes": 179200,
+      "sha256": "c88a7200f212260948144fbe898f639d13dbd13c8878b172a606a823d81a78d4"
+    },
+    {
+      "path": "unlock/build/tests/default/preflight-tests.exe",
+      "bytes": 315904,
+      "sha256": "593d65dc5e1a20677df30c1d3215c5e45bd3d2c59db49f678a210709c9f12ea2"
+    },
+    {
       "path": "unlock/build/tests/default/runtime-host.obj",
       "bytes": 1046,
       "sha256": "0eaddf8a0c4c9e8ce95525ddee53b9c083e8e265508ca9ecde4c4e0aa05f72d2"
@@ -705,8 +775,8 @@
     },
     {
       "path": "unlock/build.ps1",
-      "bytes": 5803,
-      "sha256": "9acd82e953296eaa38667e83b4209b02b59bbdfd85be191b04026043d42dfe5d"
+      "bytes": 6156,
+      "sha256": "fc70da3cbfa5346c93bb3150bef4669bad0de4dc10d2bf9671d41c2fbd20c290"
     },
     {
       "path": "unlock/checks.c",
@@ -845,8 +915,8 @@
     },
     {
       "path": "unlock/test-all.ps1",
-      "bytes": 6831,
-      "sha256": "b9ad4de8bc28bd6d23ec73a801f48d4d98df683ffd357707e8bacd18e1aa74e0"
+      "bytes": 6842,
+      "sha256": "6b393522b1413134cae8122487ca708948f21d16625f23b74575dc63bd6c4957"
     },
     {
       "path": "unlock/test-app.cmd",
@@ -935,8 +1005,8 @@
     },
     {
       "path": "unlock/tests/test_esp_profile.c",
-      "bytes": 11390,
-      "sha256": "c344b9beabefcd45b10d5d484e99e318f97fe6f6d58d428a8cbbc65d358d5fc0"
+      "bytes": 11444,
+      "sha256": "8491e855cf54fd1bef2e7dea3db3e7b39d47ea70218ce4eeafc82eeec78051fb"
     },
     {
       "path": "unlock/tests/test_fwsec_trace.c",
