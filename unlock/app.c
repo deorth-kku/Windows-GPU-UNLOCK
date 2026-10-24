@@ -384,7 +384,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE Image,EFI_SYSTEM_TABLE *St) {
   Stage="usb-log";EFI_STATUS status=GuIoOpen(Image,St);BOOLEAN attempted=FALSE,release_attempted=FALSE;
   if(EFI_ERROR(status))goto finish;
 #if defined(GU_WINDOWS_HANDOFF)
-  GuLog("BUILD MODE: LOCAL AUTOSTART; runtime profile=%s; %u-second Esc countdown, one attempt, direct Windows handoff.\n",GU_STOCK_PROFILE_NAME,(unsigned)Gu.countdown_seconds);
+  GuLog("BUILD MODE: LOCAL AUTOSTART; runtime profile=%s; Esc countdown (machine_profile.txt), one attempt, direct Windows handoff.\n",GU_STOCK_PROFILE_NAME);
 #elif defined(GU_EXPERIMENTAL_3090)
   GuLog("BUILD MODE: EXPERIMENTAL MANUAL UNLOCK; compile-time profile=%s. The shared I/O preflight banner above is superseded: exact-card checks and manual U can authorize one stock transaction.\n",GU_STOCK_PROFILE_NAME);
 #endif
@@ -395,6 +395,10 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE Image,EFI_SYSTEM_TABLE *St) {
   status=Step(status);if(EFI_ERROR(status))goto finish;
   Stage="watchdog";status=Step(Gu.bs->SetWatchdogTimer(0,0,0,NULL));if(EFI_ERROR(status))goto finish;
 #if defined(GU_WINDOWS_HANDOFF)
+  /* The ESP target and countdown come from machine_profile.txt on the booted
+     ESP. Read them as late as possible: REPORT.TXT already exists, so any
+     failure is logged, and everything before this point is profile-independent. */
+  Stage="esp-profile";status=Step(GuLoadEspProfile());if(EFI_ERROR(status))goto finish;
   /* The exact Windows loader must already be loaded successfully before the
      application may release a driver, alter registers, or enable GPU DMA. */
   Stage="windows-loader";status=Step(GuWindowsPrepare(Image,&windows));if(EFI_ERROR(status))goto finish;

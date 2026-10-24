@@ -36,6 +36,7 @@ try {
  $jobs=@(
   @{Name='checks';Sources=@('tests/test_checks.c','checks.c');Defines=@();Args=@($Capture)},
   @{Name='port';Sources=@('tests/test_port.c','port.c');Defines=@('-DGU_HOST_WRITE_TEST');Args=@()},
+  @{Name='esp-profile';Sources=@('tests/test_esp_profile.c','app_io.c','port.c','format.c','sha256.c');Defines=$defs+@('-DGU_HOST_WRITE_TEST');Args=@()},
   @{Name='preflight';Sources=@('tests/test_3090_preflight.c','app.c','app_io.c','ownership.c','format.c','sha256.c','checks.c')+$core;Defines=$defs;Args=@($Prom,$Capture)},
   @{Name='write-lock';Sources=@('tests/test_preflight_lock.c','port.c');Defines=@();Args=@()},
   @{Name='master-attributes';Sources=@('tests/test_master_attributes.c')+$core;Defines=$defs+@('-DGU_HOST_WRITE_TEST');Args=@()},

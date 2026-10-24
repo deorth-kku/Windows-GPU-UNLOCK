@@ -395,13 +395,13 @@
     },
     {
       "path": "release/EFI/BOOT/BOOTX64.EFI",
-      "bytes": 72704,
-      "sha256": "4a956311048ca8431c8b3d47ca5eb37502a7380c08dfd98af3e0728c535ff99a"
+      "bytes": 73216,
+      "sha256": "d09f24bf61df61cbea98febf9d39857bcc4b60cb71e04aefa83530bc79e279ac"
     },
     {
       "path": "release/provenance.json",
       "bytes": 9135,
-      "sha256": "9073984ccae38e138851abdf0722ff4ba4cd3f96490897c4f9a1486f4de7a3b6"
+      "sha256": "cdb4b85bfa32acc369f1cc4229c975185b1c897880fd96e4dac4f159afd399b8"
     },
     {
       "path": "tools/.pytest_cache/.gitignore",
@@ -445,8 +445,8 @@
     },
     {
       "path": "unlock/app.c",
-      "bytes": 30902,
-      "sha256": "3ef92d2e3acab2ef6b47cada70e2a96daf61909710c2c882a03441f0ba731265"
+      "bytes": 31208,
+      "sha256": "eadaf67bf54679258b8de24c205b0be9b09c4cb69218897c0fe8328f65934f90"
     },
     {
       "path": "unlock/app.h",
@@ -455,13 +455,13 @@
     },
     {
       "path": "unlock/app_io.c",
-      "bytes": 11668,
-      "sha256": "95df210f42569b949abad22c72c1c3c5160b04f17cf4e4a6052555b13a057e4b"
+      "bytes": 13513,
+      "sha256": "5653dbfc4e88a8db845d37e06c9197c3bf8afc5f48dea8bfc8c2bc2a6d737a4f"
     },
     {
       "path": "unlock/app_io.h",
-      "bytes": 241,
-      "sha256": "8bc26d9091c243aa8cf09f5d6a8628f47721cabe8a453062f14fc4e9f055fce4"
+      "bytes": 276,
+      "sha256": "d055d0d217d1b9f187d7fd911e7b57afd8a64c6017241c8425294926435fb0e5"
     },
     {
       "path": "unlock/assets.json",
@@ -470,98 +470,238 @@
     },
     {
       "path": "unlock/build/autostart/app.obj",
-      "bytes": 28211,
-      "sha256": "785ec44397845536da0e993775b1d2b6c3401e74f6950164e83161a06c40c593"
+      "bytes": 28458,
+      "sha256": "a159d9172a95cc6cf191c7eabd8a85f0c06c3c53a5fd7ba7cfe139f9995ec0e9"
     },
     {
       "path": "unlock/build/autostart/app_io.obj",
-      "bytes": 12889,
-      "sha256": "f1e043c7476c258f9b1440c73ebfe0af80654b9028f812b3a0edd5258d42ea84"
+      "bytes": 14412,
+      "sha256": "3eb3dc97ba76661af06c4614d4753f444843c4e635e930cb762a8f04f466bc4b"
     },
     {
       "path": "unlock/build/autostart/build-manifest.json",
       "bytes": 13707,
-      "sha256": "eb3cf296976edc68e210e76cd2327217c7993198bea945ad1145acf506d39a46"
+      "sha256": "b8ac7fea57dd3de92085e6c96002701b1d430a72fb44ede5474f8cedee099209"
     },
     {
       "path": "unlock/build/autostart/checks.obj",
       "bytes": 2181,
-      "sha256": "919de3d7ebcef9b50474593e704698fe019f243008fed0de66e67a8d8dce3d9a"
+      "sha256": "e58ceba261feaebd182dde8154ad3b3ad7b3daf4f7ee1c681cf94f4ddb7950af"
     },
     {
       "path": "unlock/build/autostart/compat.obj",
       "bytes": 3970,
-      "sha256": "796c5f1ce90747e47d4c062396e0881b830689fcf226308e196bd13ef84c9a98"
+      "sha256": "9809264e9b1ef1602906749ae53865dcec979cf7835e974cd71d45dd756a62ae"
     },
     {
       "path": "unlock/build/autostart/format.obj",
       "bytes": 2195,
-      "sha256": "af4f72e6e17033d95a0243746e48e5b1ba80095b0e88a8672d2d9e491f63154e"
+      "sha256": "e9299acaf16172546613529fe949edb6bfffe5f435e99e9450cff93dc2939d99"
     },
     {
       "path": "unlock/build/autostart/ownership.obj",
       "bytes": 4738,
-      "sha256": "4b0e7a30c65bd7c5603bf8a474ba0d660f1d2ece5fa43ea1a9b28c4ee15367f1"
+      "sha256": "758ffd542f42195fea1c6c64e8e7d4f250693525c25be30975b71778e7b00781"
     },
     {
       "path": "unlock/build/autostart/pe-verification.json",
       "bytes": 322,
-      "sha256": "c0f92719d599471fea21aa4df7ffa8de132bade596abf748ab8e3693c2efed23"
+      "sha256": "2a613194ae1ec5bb7eaad71f5850ad70a107a71627f8585291b9ee69bbf9dd8a"
     },
     {
       "path": "unlock/build/autostart/port.obj",
       "bytes": 10277,
-      "sha256": "e91cc99b6b7f2824a12d6fc17548fe5c68772855cb32d4ce559c7defab237fb5"
-    },
-    {
-      "path": "unlock/build/autostart/RTX3090-AUTOLOAD.EFI",
-      "bytes": 72704,
-      "sha256": "4a956311048ca8431c8b3d47ca5eb37502a7380c08dfd98af3e0728c535ff99a"
+      "sha256": "b991d039bbf4ff06e52a43ad1921e548ec32e9bbbe5c9e2c080049b1d7e9f912"
     },
     {
       "path": "unlock/build/autostart/RTX3090-AUTOLOAD.map",
-      "bytes": 48576,
-      "sha256": "e2b5a1117059a4f8ccb03933491c8a690405d62bd3fb299a16b0e593b3d72fc4"
+      "bytes": 49262,
+      "sha256": "aac8928f0e75515d4e8ac42f8b4916691d571abf7cde12eb287daf6fb42773e7"
     },
     {
       "path": "unlock/build/autostart/runtime.obj",
       "bytes": 901,
-      "sha256": "31386f95543f9542655585a4f68a02d003611984135a6f52932bc7c9a9185f3f"
+      "sha256": "a624b3760a731bddb43e7a1aab8b4828a2a7dcc8ccd3c8d6e2f52c5b3ac26c52"
     },
     {
       "path": "unlock/build/autostart/sha256.obj",
       "bytes": 2387,
-      "sha256": "851e545e15ff3e9e8dbe905c2ef4a83369a116cdb968ce3bd72884cf3d86b1be"
+      "sha256": "405de35c489c9b6bff34fa55299e1e129760e4b59240f51a9765e2a3bf2e992e"
     },
     {
       "path": "unlock/build/autostart/vendor_gfw_eval.obj",
       "bytes": 785,
-      "sha256": "3972dab7bbb97504f25dc09380fd4a5080a97891d34e56b709664ed855c40eb6"
+      "sha256": "605bfc1edfb3c996cd4830adaa21607efbe4903628e7648d7260c50845e661bf"
     },
     {
       "path": "unlock/build/autostart/vendor_layout_610.obj",
       "bytes": 3804,
-      "sha256": "fa12383c04a7eb4883b1f3ebdbeed9acce5d3a4f349dc2feb2ece4cbbff884e6"
+      "sha256": "b4e047be87687d833a6a61b156a6857d9ac2ecfea15335fcaca85bb0426d48bb"
     },
     {
       "path": "unlock/build/autostart/vendor_prep_610.obj",
       "bytes": 9121,
-      "sha256": "ac8bb53f09cceb362f329719b4372a9fa322a41d99d9f2f04b86f60e0eb367bb"
+      "sha256": "fa5e346d219f47eafb8286a7013bd7b9db290663314549aed42b4267450ab5da"
     },
     {
       "path": "unlock/build/autostart/vendor_unlock_610.obj",
       "bytes": 49972,
-      "sha256": "17140f39aa3b521ff956e54d5511142e04ee9560d655d910bd51e280968595ba"
+      "sha256": "550d1567cf9b8afe365085226223361acd976be1bc243a96f37c9ded3583e276"
     },
     {
       "path": "unlock/build/autostart/vendor_vbios_610.obj",
       "bytes": 9192,
-      "sha256": "acbcdbaac0e0c636a8a47b1b2ba7d8ba486e8a4874fc1c38abb403893f05d3f6"
+      "sha256": "63a87a4b9ef52b32412d6487ac6ac91a6ac1c5cfdbad1de7236ce2b640979665"
     },
     {
       "path": "unlock/build/autostart/windows_boot.obj",
       "bytes": 12155,
-      "sha256": "8763ecb595f8ed1ddaa7b279b10c92b833c6695113691d8581e482057690b68b"
+      "sha256": "da6c4c38724e0a4491406506605b7f687bc3f0e033c656553522c7da60d49f1c"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/app.obj",
+      "bytes": 26301,
+      "sha256": "ee774eda22c7cc2680d0f9d86e53b1d0445ca8bcbf31a1eb7883ddc3dd6185bb"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/app_io.obj",
+      "bytes": 14025,
+      "sha256": "5c24adc29795aed82e98efb78f4df6a2ce429a0a792d2aeb2e6680a7cd37a8cf"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/build-manifest.json",
+      "bytes": 13440,
+      "sha256": "c7c64985bb5cb0fcf4933d8ac5546f322c05ca2f419f742ab006d0c1c3eb9496"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/checks.obj",
+      "bytes": 2181,
+      "sha256": "ca33b0d2757d4ebfc91d45a3a26b1d165eb511eeace4f5016ba5a34799f8d601"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/compat.obj",
+      "bytes": 3970,
+      "sha256": "dce810623409c7c2067834e045bae39cc84266c4a627b3911a197d8af834875d"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/format.obj",
+      "bytes": 2195,
+      "sha256": "0dbea3c674eb1f9d9dc2d08c5d4b97a5d8a9d4e6b086fac194ad18dcb4a782b9"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/ownership.obj",
+      "bytes": 4738,
+      "sha256": "bd0e1420f516a050729d68b0893ba2f11e8a72c5174ac5c79bfa14f5e03a2f34"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/pe-verification.json",
+      "bytes": 350,
+      "sha256": "4c688fbbf6b821e9946969733345509325fe5889149334215d0290cc6376e3b9"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/port.obj",
+      "bytes": 10277,
+      "sha256": "cdbad94e3a89d3325d001d6ff9acce77df01b3c137c7ae6c8cf12439ce4f3885"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/RTX3090-EXPERIMENTAL-entryLatchedSs1Preserve.EFI",
+      "bytes": 67584,
+      "sha256": "14200b6874dabfbc28c383288913aafea9c15db2c759d334b58219361b2753af"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/RTX3090-EXPERIMENTAL-entryLatchedSs1Preserve.map",
+      "bytes": 43803,
+      "sha256": "cdf55742b59d2eac11face1883baba4be7ecca4319fc2839865aacf16012e7cf"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/runtime.obj",
+      "bytes": 901,
+      "sha256": "e3fc2591ec1ac4594725fae723663ad238bbe0d7032dbfa72522a26db2d18297"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/sha256.obj",
+      "bytes": 2387,
+      "sha256": "61f0c4f3b877ae7e6d6d5fe26284875ec467bdc01d74555a2d4ff6d988e7679b"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/vendor_gfw_eval.obj",
+      "bytes": 785,
+      "sha256": "e88a3395ea34b0c9d43f455c37e92290f46a459d8e0dabde85cd79218acee0ce"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/vendor_layout_610.obj",
+      "bytes": 3804,
+      "sha256": "50ec117f1178a2be42ab43654f9b6b66da8dbd5bd83c02f73ce7964ce27d17ab"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/vendor_prep_610.obj",
+      "bytes": 9121,
+      "sha256": "88e940c91bef5d6adda6427df7a4cce7e734c54a73a89e6bb8366704d21cb23b"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/vendor_unlock_610.obj",
+      "bytes": 49972,
+      "sha256": "b685ad333aca73ee5dbc4e3d1e8c6282b51e551b8ec0d60a8f52f38c99919ab0"
+    },
+    {
+      "path": "unlock/build/experimental/entryLatchedSs1Preserve/vendor_vbios_610.obj",
+      "bytes": 9192,
+      "sha256": "db13f0ef4bcfc6830518f8d73035f7899208a103673c5ac8553803f30c199783"
+    },
+    {
+      "path": "unlock/build/tests/default/checks-tests.exe",
+      "bytes": 195072,
+      "sha256": "47baae6c9aa079bbab1e7f37727e796840012855840ff790e0780e6cd536ea1a"
+    },
+    {
+      "path": "unlock/build/tests/default/runtime-host.obj",
+      "bytes": 1046,
+      "sha256": "0eaddf8a0c4c9e8ce95525ddee53b9c083e8e265508ca9ecde4c4e0aa05f72d2"
+    },
+    {
+      "path": "unlock/build/tests/entryLatchedSs1Preserve/checks-tests.exe",
+      "bytes": 195072,
+      "sha256": "a19a1ea4a2a103c93dd74156652a3510ae9e25d2aaa7f0bb4f7a0d026f4e7235"
+    },
+    {
+      "path": "unlock/build/tests/entryLatchedSs1Preserve/esp-profile-tests.exe",
+      "bytes": 178688,
+      "sha256": "0423d839fee640bce141065dccc3d0b79f6460f1ebf2ef57bac4d5d1a24950a2"
+    },
+    {
+      "path": "unlock/build/tests/entryLatchedSs1Preserve/master-attributes-tests.exe",
+      "bytes": 276480,
+      "sha256": "3d359d4c470a053bf95c58fe48bddfebcc21ea245f30725d4b9378396fd39f84"
+    },
+    {
+      "path": "unlock/build/tests/entryLatchedSs1Preserve/port-tests.exe",
+      "bytes": 193536,
+      "sha256": "0487a34ea5017610f8d0b16131dc51447014761ba243d7c4280dc5e5d9120bb1"
+    },
+    {
+      "path": "unlock/build/tests/entryLatchedSs1Preserve/preflight-tests.exe",
+      "bytes": 315392,
+      "sha256": "2e9ea7ad528be5566f67edd901e2642614e48f527e966f3fe7217428800d3cd7"
+    },
+    {
+      "path": "unlock/build/tests/entryLatchedSs1Preserve/profile-lock-tests.exe",
+      "bytes": 199680,
+      "sha256": "cd22a060820b11c0321ea9c7cfb8b55c3b4807265857b81a40a12c631d2e4f38"
+    },
+    {
+      "path": "unlock/build/tests/entryLatchedSs1Preserve/runtime-host.obj",
+      "bytes": 1046,
+      "sha256": "7ce54db80a683d94e1efd7f6c49048d9e6ba8c655e1766ebfc65ad400881ceea"
+    },
+    {
+      "path": "unlock/build/tests/entryLatchedSs1Preserve/runtime-tests.exe",
+      "bytes": 163840,
+      "sha256": "de20e5064f0eb913b9232ad5878da1b34f3e8889bf33af2dbc0a0d69ea69dde8"
+    },
+    {
+      "path": "unlock/build/tests/entryLatchedSs1Preserve/write-lock-tests.exe",
+      "bytes": 193536,
+      "sha256": "22752d86c8ea7fb98806a041deb2ac3653592faad1a231096aad17c722315504"
     },
     {
       "path": "unlock/build.ps1",
@@ -705,8 +845,8 @@
     },
     {
       "path": "unlock/test-all.ps1",
-      "bytes": 6677,
-      "sha256": "af00d32a7c18f24f00e3a1a80522e324a3804a4d630fdcca35841518bc536df4"
+      "bytes": 6831,
+      "sha256": "b9ad4de8bc28bd6d23ec73a801f48d4d98df683ffd357707e8bacd18e1aa74e0"
     },
     {
       "path": "unlock/test-app.cmd",
@@ -792,6 +932,11 @@
       "path": "unlock/tests/test_entry_latched.c",
       "bytes": 11856,
       "sha256": "fe99b8ad16a21318d914919aea283fdb6c5ed6c387bb9e034abf3ae2386a27f3"
+    },
+    {
+      "path": "unlock/tests/test_esp_profile.c",
+      "bytes": 11390,
+      "sha256": "c344b9beabefcd45b10d5d484e99e318f97fe6f6d58d428a8cbbc65d358d5fc0"
     },
     {
       "path": "unlock/tests/test_fwsec_trace.c",

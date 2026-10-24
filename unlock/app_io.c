@@ -10,6 +10,10 @@ static EFI_GUID LoadedGuid=EFI_LOADED_IMAGE_PROTOCOL_GUID,
 static EFI_SYSTEM_TABLE *Table;
 static EFI_FILE_PROTOCOL *Root,*Parent,*Run,*Report;
 static BOOLEAN LogFault;
+#ifdef GU_HOST_WRITE_TEST
+/* Host unit-test hook: point GuLoadEspProfile at a mocked directory handle. */
+VOID GuIoTestSetParent(EFI_FILE_PROTOCOL *P){Parent=P;}
+#endif
 typedef struct {const char *name;CHAR16 *file;UINTN size;const char *hash;} ASSET_SPEC;
 static const ASSET_SPEC Specs[]={
  {"gpu-unlock/610.43.03/booter_load_ga102.bin",L"ASSETS\\booter_load_ga102.bin",61256,"056cbc064a888f80717726c54d7f64fcd68044d123870c95a74f37f4975dcaa4"},
@@ -76,13 +80,18 @@ static EFI_STATUS GuParseEspProfile(const char *text,UINTN len) {
   UINT64 partition=0,start_lba=0,size_lba=0;
   UINT32 countdown=5;
   BOOLEAN have_part=FALSE,have_start=FALSE,have_size=FALSE,have_guid=FALSE;
-  EFI_GUID guid;
+  EFI_GUID guid={0};
   if(len>=sizeof(buf))return EFI_COMPROMISED_DATA;
   memcpy(buf,text,len);buf[len]=0;
   for(i=0;;) {
     UINTN start=i,j=i;
+    BOOLEAN last=FALSE;
     while(buf[j] && buf[j]!='\n')j++;
+    if(!buf[j])last=TRUE;
     while(j>start && (buf[j-1]=='\r'||buf[j-1]==' '||buf[j-1]=='\t'))j--;
+    /* Terminate the line: values are read via strlen/GuParseDec and must not
+       run past the newline into the next line. */
+    buf[j]=0;
     if(j>start) {
       char *eq=0;
       for(k=start;k<j;k++)if(buf[k]=='=' ){eq=buf+k;break;}
@@ -90,17 +99,19 @@ static EFI_STATUS GuParseEspProfile(const char *text,UINTN len) {
         *eq=0;
         char *key=buf+start,*val=eq+1;
         while(*key==' '||*key=='\t')key++;
+        {UINTN kl=(UINTN)strlen(key);while(kl>0 && (key[kl-1]==' '||key[kl-1]=='\t'))key[--kl]=0;}
         while(*val==' '||*val=='\t')val++;
         {UINTN vl=(UINTN)strlen(val);while(vl>0 && (val[vl-1]==' '||val[vl-1]=='\t'))val[--vl]=0;}
         if(!strcmp(key,"windows_esp_guid")) {
-          char d[33];UINTN di=0;UINT64 t;
-          for(k=0;val[k] && di<32;k++)if(val[k]!='-')d[di++]=val[k];
+          char d[33];UINTN di=0,total=0;UINT64 t1,t2,t3,t4;
+          for(k=0;val[k];k++){if(val[k]!='-'){total++;if(di<32)d[di++]=val[k];}}
           d[di]=0;
-          if(di==32) {
-            if(GuParseHex(d,8,&t))guid.Data1=(UINT32)t;
-            if(GuParseHex(d+8,4,&t))guid.Data2=(UINT16)t;
-            if(GuParseHex(d+12,4,&t))guid.Data3=(UINT16)t;
-            for(k=0;k<8;k++)if(GuParseHex(d+16+2*k,2,&t))guid.Data4[k]=(UINT8)t;
+          /* Strict: exactly 32 valid hex digits, else the GUID is rejected
+             (partial writes would leave guid fields uninitialized). */
+          if(total==32 && GuParseHex(d,8,&t1) && GuParseHex(d+8,4,&t2) &&
+             GuParseHex(d+12,4,&t3) && GuParseHex(d+16,16,&t4)) {
+            guid.Data1=(UINT32)t1;guid.Data2=(UINT16)t2;guid.Data3=(UINT16)t3;
+            for(k=0;k<8;k++)guid.Data4[k]=(UINT8)((t4>>(56-8*k))&0xff);
             have_guid=TRUE;
           }
         } else if(!strcmp(key,"windows_esp_partition")) {
@@ -115,7 +126,7 @@ static EFI_STATUS GuParseEspProfile(const char *text,UINTN len) {
         }
       }
     }
-    if(buf[j]==0)break;
+    if(last)break;
     i=j+1;
   }
   if(!(have_guid&&have_part&&have_start&&have_size))return EFI_COMPROMISED_DATA;
@@ -129,27 +140,49 @@ static EFI_STATUS GuParseEspProfile(const char *text,UINTN len) {
     (unsigned long long)partition,(unsigned long long)start_lba,(unsigned long long)size_lba,(unsigned)countdown);
   return EFI_SUCCESS;
 }
-static EFI_STATUS GuReadEspProfile(EFI_FILE_PROTOCOL *Parent) {
+/* Read and parse machine_profile.txt from the payload directory. Must run
+   after GuIoOpen so that REPORT.TXT exists and every failure path is logged.
+   The booted ESP is the only accepted source; nothing is baked into the image. */
+EFI_STATUS GuLoadEspProfile(VOID) {
   EFI_FILE_PROTOCOL *file=NULL;
   union {EFI_FILE_INFO info;UINT8 bytes[512];} data;
   UINTN n=sizeof(data),bytes=0;
-  EFI_STATUS status=Parent->Open(Parent,&file,L"\\machine_profile.txt",EFI_FILE_MODE_READ,0);
-  if(EFI_ERROR(status))return status;
+  /* No leading backslash: edk2's FAT driver treats a name starting with '\'
+     as absolute from the volume root, ignoring the Parent handle. */
+  EFI_STATUS status=Parent->Open(Parent,&file,L"machine_profile.txt",EFI_FILE_MODE_READ,0);
+  if(EFI_ERROR(status)) {
+    GuLog("esp-profile: open machine_profile.txt failed status=%#llx\n",(unsigned long long)status);
+    return status;
+  }
   n=sizeof(data);
   status=file->GetInfo(file,&InfoGuid,&n,&data);
   if(EFI_ERROR(status) || n<SIZE_OF_EFI_FILE_INFO || n>sizeof(data) ||
      data.info.Size>n || data.info.Size<SIZE_OF_EFI_FILE_INFO ||
      (data.info.Attribute&EFI_FILE_DIRECTORY) || data.info.FileSize<1 || data.info.FileSize>1024) {
-    file->Close(file);return EFI_COMPROMISED_DATA;
+    file->Close(file);
+    GuLog("esp-profile: file metadata rejected status=%#llx\n",(unsigned long long)status);
+    return EFI_COMPROMISED_DATA;
   }
   {
     char *text=GuAlloc(data.info.FileSize+1);
     if(!text){file->Close(file);return EFI_OUT_OF_RESOURCES;}
-    bytes=0;
+    /* Read exactly FileSize bytes; a Read with *Len==0 and a non-NULL buffer
+       is a zero-byte read, not a size query (that requires Buffer==NULL). */
+    bytes=data.info.FileSize;
     status=file->Read(file,&bytes,text);
-    if(!EFI_ERROR(status)){text[bytes]=0;status=file->Close(file);}
+    if(EFI_ERROR(status) || bytes!=data.info.FileSize) {
+      if(!EFI_ERROR(status))(void)file->Close(file);
+      GuFree(text);
+      GuLog("esp-profile: read failed status=%#llx bytes=%llu\n",(unsigned long long)status,(unsigned long long)bytes);
+      return EFI_DEVICE_ERROR;
+    }
+    text[bytes]=0;
+    status=file->Close(file);
     if(!EFI_ERROR(status))status=GuParseEspProfile(text,bytes);
-    if(EFI_ERROR(status))(void)file->Close(file);
+    if(EFI_ERROR(status)) {
+      (void)file->Close(file);
+      GuLog("esp-profile: parse failed status=%#llx\n",(unsigned long long)status);
+    }
     GuFree(text);
   }
   return status;
@@ -171,7 +204,8 @@ EFI_STATUS GuIoOpen(EFI_HANDLE Image,EFI_SYSTEM_TABLE *St) {
 #endif
   if(EFI_ERROR(status) || !Parent)return EFI_NOT_FOUND;
   status=Metadata(Parent,TRUE,0);if(EFI_ERROR(status))return status;
-  status=GuReadEspProfile(Parent);if(EFI_ERROR(status))return status;
+  /* The ESP profile (machine_profile.txt) is read later, as late as possible
+     (see GuLoadEspProfile), so its failure cannot prevent RUN/REPORT creation. */
   for(UINTN slot=0;slot<100;slot++) {
     CHAR16 name[]=L"RUN00";name[3]=(CHAR16)('0'+slot/10);name[4]=(CHAR16)('0'+slot%10);
     EFI_FILE_PROTOCOL *existing=NULL;
