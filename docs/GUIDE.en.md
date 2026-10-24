@@ -77,7 +77,7 @@ Booting `RTX3090-AUTOLOAD.EFI` requires no manual U confirmation. Instead:
 5. Only when GPU resource cleanup is proven is the Windows Boot Manager started directly via `StartImage`.
 6. If the Windows Boot Manager returns, there is no retry. Power off or use the firmware boot menu.
 
-The countdown duration is configured by `countdown_seconds` in `machine_profile.txt`.
+The countdown duration is configured by `countdown_seconds` in `machine_profile.txt`; set it to `0` to arm immediately with no countdown.
 
 Register the autostart EFI as a separate USB boot entry from the manual execution EFI. They are distinct boot paths; do not confuse them.
 

@@ -166,13 +166,14 @@ int main(void) {
       "windows_esp_size_lba=204800\ncountdown_seconds=3600\n");
     CHECK(run_parse(buf,strlen(buf))==EFI_SUCCESS,"cd3600: status");
     expect_ok("cd3600",1,2048,204800,3600,&ExactGuid);
-    /* Out-of-range countdown is ignored, default 5 applies. */
+    /* 0 is valid: no countdown, arm immediately. */
     snprintf(buf,sizeof(buf),
       "windows_esp_guid=12345678-9abc-def0-1234-56789abcdef0\n"
       "windows_esp_partition=1\nwindows_esp_start_lba=2048\n"
       "windows_esp_size_lba=204800\ncountdown_seconds=0\n");
     CHECK(run_parse(buf,strlen(buf))==EFI_SUCCESS,"cd0: status");
-    expect_ok("cd0",1,2048,204800,5,&ExactGuid);
+    expect_ok("cd0",1,2048,204800,0,&ExactGuid);
+    /* Out-of-range countdown is ignored, default 5 applies. */
     snprintf(buf,sizeof(buf),
       "windows_esp_guid=12345678-9abc-def0-1234-56789abcdef0\n"
       "windows_esp_partition=1\nwindows_esp_start_lba=2048\n"

@@ -36,7 +36,7 @@ countdown_seconds=5
 | `windows_esp_partition` | GPT partition number (1-based) |
 | `windows_esp_start_lba` | Partition start LBA |
 | `windows_esp_size_lba` | Partition size in LBA |
-| `countdown_seconds` | Countdown duration in seconds (default 5) |
+| `countdown_seconds` | Countdown duration in seconds (default 5; `0` arms immediately with no countdown) |
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\unlock\build.ps1 `

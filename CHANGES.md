@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-10-24 — `countdown_seconds=0` arms immediately
+
+- `unlock/app_io.c`: `countdown_seconds` in `machine_profile.txt` now accepts `0` (range 0..3600). `0` means no countdown: `Arm()` performs its single Esc check and arms the unlock immediately. Out-of-range values (e.g. 3601) are still ignored, default 5 applies.
+- `unlock/tests/test_esp_profile.c`: the `cd0` case now expects `Gu.countdown_seconds==0` instead of the old default-fallback behavior.
+- `docs/BUILD.en.md`, `docs/BUILD.ko.md`, `docs/GUIDE.en.md`, `docs/GUIDE.ko.md`: documented `0` as "arm immediately with no countdown".
+
 ## 2026-10-23 — Automatic Windows handoff (auto-load) for the 3080 Ti port
 
 - Ported the automatic boot handoff from bjrasmussen-jpg/windows_rtx3090_unlock onto the local 3080 Ti port. The unlock no longer requires a manual `U` confirmation plus a separate Windows Boot Manager chainload: a cancellable five-second countdown arms the single transaction, and the exact internal Windows loader is staged before any GPU effect and started only after proven cleanup.

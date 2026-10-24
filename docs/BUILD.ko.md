@@ -34,7 +34,7 @@ countdown_seconds=5
 | `windows_esp_partition` | GPT 파티션 번호 (1-based) |
 | `windows_esp_start_lba` | 파티션 시작 LBA |
 | `windows_esp_size_lba` | 파티션 크기 (LBA) |
-| `countdown_seconds` | 카운트다운 초 (기본 5) |
+| `countdown_seconds` | 카운트다운 초 (기본 5; `0`이면 카운트다운 없이 즉시 실행) |
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\unlock\build.ps1 `

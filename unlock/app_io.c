@@ -122,7 +122,8 @@ static EFI_STATUS GuParseEspProfile(const char *text,UINTN len) {
           if(GuParseDec(val,&size_lba))have_size=TRUE;
         } else if(!strcmp(key,"countdown_seconds")) {
           UINT64 cd=0;
-          if(GuParseDec(val,&cd) && cd>=1 && cd<=3600)countdown=(UINT32)cd;
+          /* 0 means "no countdown, arm immediately"; 1..3600 are seconds. */
+          if(GuParseDec(val,&cd) && cd<=3600)countdown=(UINT32)cd;
         }
       }
     }

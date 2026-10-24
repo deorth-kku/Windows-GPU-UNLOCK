@@ -71,7 +71,7 @@ USB:/
 5. GPU 리소스 정리가 증명된 경우에만 Windows Boot Manager를 직접 `StartImage`로 시작합니다.
 6. Windows Boot Manager가 반환되면 재시도가 없습니다. 전원을 끄거나 펌웨어 부팅 메뉴를 사용하세요.
 
-카운트다운 시간은 `machine_profile.txt`의 `countdown_seconds`로 설정합니다.
+카운트다운 시간은 `machine_profile.txt`의 `countdown_seconds`로 설정합니다. `0`으로 설정하면 카운트다운 없이 즉시 실행됩니다.
 
 autostart EFI는 USB 부팅 항목에 수동 실행 EFI와 별도로 등록합니다. 두 EFI는 서로 다른 부팅 경로이므로 혼동하지 않습니다.
 
